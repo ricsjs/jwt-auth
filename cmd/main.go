@@ -1,24 +1,23 @@
 package main
 
 import (
-	"time"
+	"fmt"
+	"net/http"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/cheildo/jwt-auth-golang/login"
+	"github.com/gorilla/mux"
 )
 
-var secretKey = []byte("secret-key")
+func main() {
+	router := mux.NewRouter()
 
-func createToken(username string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"username": username,
-			"exp":      time.Now().Add(time.Hour * 24).Unix(),
-		})
+	router.HandleFunc("/login", login.LoginHandler).Methods("POST")
+	router.HandleFunc("/protected", login.ProtectedHandler).Methods("GET")
 
-	tokenString, err := token.SignedString(secretKey)
+	fmt.Println("Starting the server")
+	err := http.ListenAndServe("localhost:4000", router)
 	if err != nil {
-		return "", nil
+		fmt.Println("Could not start the server", err)
 	}
-
-	return tokenString, nil
+	fmt.Println("Server started. Listenning on port 4000")
 }
